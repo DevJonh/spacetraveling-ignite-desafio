@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-// import { GetStaticProps } from 'next';
+import { format } from 'date-fns';
+import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useState } from 'react';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import { Header } from '../components/Header';
+import { getPrismicClient } from '../services/prismic';
 
-// import { getPrismicClient } from '../services/prismic';
-
-// import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
 interface Post {
@@ -29,7 +29,27 @@ interface PostPagination {
   postsPagination: PostPagination;
 } */
 
-export default function Home() {
+export default function Home({ results, next_page }: PostPagination) {
+  const [posts, setPosts] = useState<Post[]>(results);
+  const [nextPage, setNextPage] = useState(next_page);
+
+  const handleLoadMorePosts = async () => {
+    const data = await fetch(next_page).then(res => res.json());
+    const newPosts = data.results.map(post => {
+      return {
+        uid: post.uid,
+        first_publication_date: post.first_publication_date,
+        data: {
+          title: post.data.title,
+          subtitle: post.data.subtitle,
+          author: post.data.author,
+        },
+      };
+    });
+
+    setPosts([...posts, ...newPosts]);
+    setNextPage(data.next_page);
+  };
   return (
     <>
       <Head>
@@ -40,119 +60,63 @@ export default function Home() {
 
         <article className={styles.containerContent}>
           <ul>
-            <li>
-              <Link href="/">
-                <a>
-                  <h3>Como utilizar Hooks</h3>
-                  <span>
-                    Pensando em sincronização em vez de ciclos de vida
-                  </span>
-                  <div className={styles.info}>
-                    <p>
-                      <FiCalendar /> <time>15 Mar 2021</time>
-                    </p>
+            {posts.map(post => (
+              <li key={post.uid}>
+                <Link href={`/post/${post.uid}`}>
+                  <a>
+                    <h3>{post.data.title}</h3>
+                    <span>{post.data.subtitle}</span>
+                    <div className={styles.info}>
+                      <p>
+                        <FiCalendar />{' '}
+                        <time>{post.first_publication_date}</time>
+                      </p>
 
-                    <p>
-                      <FiUser /> <p>Joseph Oliveira</p>
-                    </p>
-                  </div>
-                </a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/">
-                <a>
-                  <h3>Criando um app CRA do zero</h3>
-                  <span>
-                    Tudo sobre como criar a sua primeira aplicação utilizando
-                    Create React App
-                  </span>
-                  <div className={styles.info}>
-                    <p>
-                      <FiCalendar /> <time>19 Abr 2021</time>
-                    </p>
-
-                    <p>
-                      <FiUser /> <p>Danilo Vieira</p>
-                    </p>
-                  </div>
-                </a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/">
-                <a>
-                  <h3>Como utilizar Hooks</h3>
-                  <span>
-                    Pensando em sincronização em vez de ciclos de vida
-                  </span>
-                  <div className={styles.info}>
-                    <p>
-                      <FiCalendar /> <time>15 Mar 2021</time>
-                    </p>
-
-                    <p>
-                      <FiUser /> <p>Joseph Oliveira</p>
-                    </p>
-                  </div>
-                </a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/">
-                <a>
-                  <h3>Criando um app CRA do zero</h3>
-                  <span>
-                    Tudo sobre como criar a sua primeira aplicação utilizando
-                    Create React App
-                  </span>
-                  <div className={styles.info}>
-                    <p>
-                      <FiCalendar /> <time>19 Abr 2021</time>
-                    </p>
-
-                    <p>
-                      <FiUser /> <p>Danilo Vieira</p>
-                    </p>
-                  </div>
-                </a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/">
-                <a>
-                  <h3>Como utilizar Hooks</h3>
-                  <span>
-                    Pensando em sincronização em vez de ciclos de vida
-                  </span>
-                  <div className={styles.info}>
-                    <p>
-                      <FiCalendar /> <time>15 Mar 2021</time>
-                    </p>
-
-                    <p>
-                      <FiUser /> <p>Joseph Oliveira</p>
-                    </p>
-                  </div>
-                </a>
-              </Link>
-            </li>
+                      <p>
+                        <FiUser /> <p>{post.data.author}</p>
+                      </p>
+                    </div>
+                  </a>
+                </Link>
+              </li>
+            ))}
           </ul>
         </article>
-        <button type="button" className={styles.button}>
-          Carregar mais posts
-        </button>
+        {nextPage && (
+          <button
+            type="button"
+            className={styles.button}
+            onClick={handleLoadMorePosts}
+          >
+            Carregar mais posts
+          </button>
+        )}
       </main>
     </>
   );
 }
 
-/* export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
-  const postsResponse = await prismic.query();
+  const postsResponse = await prismic.get({ pageSize: 5 });
+
+  const posts = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd MMM YYY'
+      ),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
+  });
 
   return {
-    props: {},
+    revalidate: 60 * 60 * 24, // 24 hours
+    props: { results: posts, next_page: postsResponse.next_page || '' },
   };
 };
-*/

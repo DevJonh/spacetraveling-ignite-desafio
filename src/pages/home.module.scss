@@ -26,6 +26,8 @@
       list-style: none;
       & + li {
         margin-top: 3rem;
+        animation-name: newPost;
+        animation-duration: 0.3s;
       }
 
       h3 {
@@ -76,5 +78,14 @@
       margin-left: 0.6rem;
       font-size: 0.9rem;
     }
+  }
+}
+
+@keyframes newPost {
+  from {
+    transform: translateY(-10px);
+  }
+  to {
+    transform: translateY(0);
   }
 }

@@ -1,1 +1,59 @@
-// TODO
+.banner {
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-bottom: 5rem;
+}
+
+.container {
+  h1 {
+    font-size: 3rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 2.2rem;
+    color: var(--heading);
+  }
+}
+
+.information {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 70%;
+  width: 50%;
+  margin-bottom: 4rem;
+  color: var(--info);
+
+  time,
+  p {
+    display: flex;
+    align-items: center;
+
+    svg {
+      margin-right: 8px;
+    }
+  }
+}
+
+.content {
+  h2 {
+    font-size: 2.25rem;
+    line-height: 4.5rem;
+    margin-bottom: 2.25rem;
+    color: var(--heading);
+  }
+
+  div {
+    p {
+      font-size: 1.125rem;
+      color: var(--body);
+      line-height: 2rem;
+
+      a {
+        color: var(--highlight);
+      }
+    }
+    margin-bottom: 2.25rem;
+  }
+}
