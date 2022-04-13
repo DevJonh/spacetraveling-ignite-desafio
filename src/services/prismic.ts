@@ -1,16 +1,10 @@
-import * as Prismic from '@prismicio/client';
-import { enableAutoPreviews } from '@prismicio/next';
+import Prismic from '@prismicio/client';
+import { DefaultClient } from '@prismicio/client/types/client';
 
-export function getPrismicClient(req?: any) {
-  const prismic = Prismic.createClient(process.env.PRISMIC_ENDPOINT, {
-    ...req,
-    accessToken: process.env.PRISMIC_ACESS_TOKEN,
-  });
-
-  enableAutoPreviews({
-    client: prismic,
-    previewData: req?.previewData,
+export function getPrismicClient(req?: unknown): DefaultClient {
+  const prismic = Prismic.client(process.env.PRISMIC_ENDPOINT, {
     req,
+    accessToken: process.env.PRISMIC_ACESS_TOKEN,
   });
 
   return prismic;

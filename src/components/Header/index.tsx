@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -7,9 +8,7 @@ export function Header() {
   return (
     <header className={styles.header}>
       <Link href="/">
-        <a>
-          <Image src="/images/Logo.svg" alt="logo" width={239} height={26} />
-        </a>
+        <Image src="/images/Logo.svg" alt="logo" width={239} height={26} />
       </Link>
     </header>
   );

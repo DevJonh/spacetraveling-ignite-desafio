@@ -5,6 +5,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
 import { FiCalendar, FiUser } from 'react-icons/fi';
+import Prismic from '@prismicio/client';
 import { Header } from '../components/Header';
 import { getPrismicClient } from '../services/prismic';
 
@@ -25,16 +26,16 @@ interface PostPagination {
   results: Post[];
 }
 
-/* interface HomeProps {
+interface HomeProps {
   postsPagination: PostPagination;
-} */
+}
 
-export default function Home({ results, next_page }: PostPagination) {
-  const [posts, setPosts] = useState<Post[]>(results);
-  const [nextPage, setNextPage] = useState(next_page);
+export default function Home({ postsPagination }: HomeProps) {
+  const [posts, setPosts] = useState<Post[]>(postsPagination.results);
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
 
   const handleLoadMorePosts = async () => {
-    const data = await fetch(next_page).then(res => res.json());
+    const data = await fetch(postsPagination.next_page).then(res => res.json());
     const newPosts = data.results.map(post => {
       return {
         uid: post.uid,
@@ -98,9 +99,15 @@ export default function Home({ results, next_page }: PostPagination) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
-  const postsResponse = await prismic.get({ pageSize: 5 });
+  const postsResponse = await prismic.query(
+    [Prismic.predicates.at('document.type', 'posts')],
+    {
+      fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
+      pageSize: 5,
+    }
+  );
 
-  const posts = postsResponse.results.map(post => {
+  const posts: Post[] = postsResponse.results.map(post => {
     return {
       uid: post.uid,
       first_publication_date: format(
